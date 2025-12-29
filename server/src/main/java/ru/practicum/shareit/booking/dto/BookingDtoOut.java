@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.Data;
-import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserDto;
 
@@ -14,5 +14,5 @@ public class BookingDtoOut {
     private LocalDateTime end;
     private ItemDto item;
     private UserDto booker;
-    private BookingStatus status;
+    private BookingState status;
 }

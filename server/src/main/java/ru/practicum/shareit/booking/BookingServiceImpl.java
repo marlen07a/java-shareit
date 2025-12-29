@@ -1,11 +1,15 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -32,19 +36,19 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Item not found"));
 
         if (!item.getAvailable()) {
-            throw new RuntimeException("Item is not available");
+            throw new ValidationException("Item is not available");
         }
         if (item.getOwner().getId().equals(userId)) {
             throw new NotFoundException("Owner cannot book his own item");
         }
         if (bookingDto.getEnd().isBefore(bookingDto.getStart()) || bookingDto.getEnd().equals(bookingDto.getStart())) {
-            throw new RuntimeException("Wrong dates");
+            throw new ValidationException("Wrong dates");
         }
 
         Booking booking = BookingMapper.toBooking(bookingDto);
         booking.setBooker(booker);
         booking.setItem(item);
-        booking.setStatus(BookingStatus.WAITING);
+        booking.setStatus(BookingState.WAITING);
 
         return BookingMapper.toBookingDtoOut(bookingRepository.save(booking));
     }
@@ -55,15 +59,15 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
 
-        if (booking.getStatus() != BookingStatus.WAITING) {
-            throw new IllegalArgumentException("Booking status is not WAITING");
+        if (booking.getStatus() != BookingState.WAITING) {
+            throw new ValidationException("Booking status is not WAITING");
         }
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
-            throw new RuntimeException("User is not the owner");
+            throw new ValidationException("User is not the owner");
         }
 
-        booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        booking.setStatus(approved ? BookingState.APPROVED : BookingState.REJECTED);
         return BookingMapper.toBookingDtoOut(bookingRepository.save(booking));
     }
 
@@ -81,66 +85,77 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoOut> getAllByUser(Long userId, String state) {
+    public List<BookingDtoOut> getAllByUser(Long userId, String state, Integer from, Integer size) {
+        // CHECK USER FIRST - ensures 404 is thrown before any pagination validation 400
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid pagination parameters");
+        }
+
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings;
 
         switch (state.toUpperCase()) {
             case "ALL":
-                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                bookings = bookingRepository.findAllByBookerId(userId, pageable).getContent();
                 break;
             case "CURRENT":
-                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
+                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfter(userId, now, now, pageable).getContent();
                 break;
             case "PAST":
-                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
+                bookings = bookingRepository.findAllByBookerIdAndEndBefore(userId, now, pageable).getContent();
                 break;
             case "FUTURE":
-                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now);
+                bookings = bookingRepository.findAllByBookerIdAndStartAfter(userId, now, pageable).getContent();
                 break;
             case "WAITING":
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                bookings = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.WAITING, pageable).getContent();
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                bookings = bookingRepository.findAllByBookerIdAndStatus(userId, BookingState.REJECTED, pageable).getContent();
                 break;
             default:
-                throw new RuntimeException("Unknown state: " + state);
+                throw new ValidationException("Unknown state: " + state);
         }
 
         return bookings.stream().map(BookingMapper::toBookingDtoOut).collect(Collectors.toList());
     }
 
     @Override
-    public List<BookingDtoOut> getAllByOwner(Long userId, String state) {
+    public List<BookingDtoOut> getAllByOwner(Long userId, String state, Integer from, Integer size) {
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Invalid pagination parameters");
+        }
+
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("start").descending());
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings;
 
         switch (state.toUpperCase()) {
             case "ALL":
-                bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId);
+                bookings = bookingRepository.findAllByItemOwnerId(userId, pageable).getContent();
                 break;
             case "CURRENT":
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfter(userId, now, now, pageable).getContent();
                 break;
             case "PAST":
-                bookings = bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndEndBefore(userId, now, pageable).getContent();
                 break;
             case "FUTURE":
-                bookings = bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartAfter(userId, now, pageable).getContent();
                 break;
             case "WAITING":
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, pageable).getContent();
                 break;
             case "REJECTED":
-                bookings = bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                bookings = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, pageable).getContent();
                 break;
             default:
-                throw new RuntimeException("Unknown state: " + state);
+                throw new ValidationException("Unknown state: " + state);
         }
         return bookings.stream().map(BookingMapper::toBookingDtoOut).collect(Collectors.toList());
     }

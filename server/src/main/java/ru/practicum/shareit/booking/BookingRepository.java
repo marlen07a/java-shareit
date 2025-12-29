@@ -1,32 +1,56 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findAllByBookerIdOrderByStartDesc(long bookerId);
 
-    List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(long bookerId, BookingStatus status);
+    Page<Booking> findAllByBookerId(long bookerId, Pageable pageable);
+    Page<Booking> findAllByBookerIdAndStatus(long bookerId, BookingState state, Pageable pageable);
+    Page<Booking> findAllByBookerIdAndEndBefore(long bookerId, LocalDateTime now, Pageable pageable);
+    Page<Booking> findAllByBookerIdAndStartAfter(long bookerId, LocalDateTime now, Pageable pageable);
+    Page<Booking> findAllByBookerIdAndStartBeforeAndEndAfter(long bookerId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findAllByBookerIdAndEndBeforeOrderByStartDesc(long bookerId, LocalDateTime now);
+    Page<Booking> findAllByItemOwnerId(long ownerId, Pageable pageable);
+    Page<Booking> findAllByItemOwnerIdAndStatus(long ownerId, BookingState state, Pageable pageable);
+    Page<Booking> findAllByItemOwnerIdAndEndBefore(long ownerId, LocalDateTime now, Pageable pageable);
+    Page<Booking> findAllByItemOwnerIdAndStartAfter(long ownerId, LocalDateTime now, Pageable pageable);
+    Page<Booking> findAllByItemOwnerIdAndStartBeforeAndEndAfter(long ownerId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findAllByBookerIdAndStartAfterOrderByStartDesc(long bookerId, LocalDateTime now);
+    @Query("SELECT b FROM Booking b " +
+            "LEFT JOIN FETCH b.booker " +
+            "WHERE b.item.id = :itemId " +
+            "AND b.status = :status " +
+            "ORDER BY b.start ASC")
+    List<Booking> findAllByItemIdAndStatusOrderByStartAsc(@Param("itemId") Long itemId,
+                                                          @Param("status") BookingState state);
 
-    List<Booking> findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(long bookerId, LocalDateTime start, LocalDateTime end);
-
-    List<Booking> findAllByItemOwnerIdOrderByStartDesc(long ownerId);
-
-    List<Booking> findAllByItemOwnerIdAndStatusOrderByStartDesc(long ownerId, BookingStatus status);
-
-    List<Booking> findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(long ownerId, LocalDateTime now);
-
-    List<Booking> findAllByItemOwnerIdAndStartAfterOrderByStartDesc(long ownerId, LocalDateTime now);
-
-    List<Booking> findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(long ownerId, LocalDateTime start, LocalDateTime end);
-
-    List<Booking> findAllByItemIdAndStatusOrderByStartAsc(Long itemId, BookingStatus status);
+    boolean existsByBookerIdAndItemIdAndStatusAndEndBefore(Long bookerId, Long itemId, BookingState status, LocalDateTime now);
 
     boolean existsByBookerIdAndItemIdAndEndBefore(Long bookerId, Long itemId, LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b " +
+            "LEFT JOIN FETCH b.booker " +
+            "LEFT JOIN FETCH b.item " +
+            "WHERE b.item.id IN :itemIds " +
+            "AND b.status = :status " +
+            "ORDER BY b.start ASC")
+    List<Booking> findAllByItemIdInAndStatus(@Param("itemIds") List<Long> itemIds,
+                                             @Param("status") BookingState state);
+
+    @Query("SELECT count(b) > 0 FROM Booking b " +
+            "WHERE b.item.id = :itemId " +
+            "AND b.booker.id = :userId " +
+            "AND b.status = :status " +
+            "AND b.start <= :now")  // ← Changed to START
+    boolean existsByBookerAndItemAndStatusAndStartBeforeOrEqual(@Param("userId") Long userId,
+                                                                @Param("itemId") Long itemId,
+                                                                @Param("status") BookingState status,
+                                                                @Param("now") LocalDateTime now);
 }
