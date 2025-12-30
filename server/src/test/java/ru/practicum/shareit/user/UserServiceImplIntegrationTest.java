@@ -85,4 +85,26 @@ class UserServiceImplIntegrationTest {
 
         assertThat(userRepository.findById(created.getId())).isEmpty();
     }
+
+    @Test
+    void updateUser_shouldUpdateOnlyName_WhenEmailIsNull() {
+        UserDto created = userService.createUser(new UserDto(null, "Old Name", "old@test.com"));
+
+        UserDto updateDto = new UserDto(null, "New Name", null);
+        UserDto result = userService.updateUser(created.getId(), updateDto);
+
+        assertThat(result.getName()).isEqualTo("New Name");
+        assertThat(result.getEmail()).isEqualTo("old@test.com");
+    }
+
+    @Test
+    void updateUser_shouldUpdateOnlyEmail_WhenNameIsNull() {
+        UserDto created = userService.createUser(new UserDto(null, "Old Name", "old@test.com"));
+
+        UserDto updateDto = new UserDto(null, null, "new@test.com");
+        UserDto result = userService.updateUser(created.getId(), updateDto);
+
+        assertThat(result.getName()).isEqualTo("Old Name");
+        assertThat(result.getEmail()).isEqualTo("new@test.com");
+    }
 }

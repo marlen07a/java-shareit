@@ -195,4 +195,36 @@ class BookingServiceImplIntegrationTest {
         booking.setStatus(BookingState.WAITING);
         return bookingRepository.save(booking);
     }
+
+    @Test
+    void getById_shouldReturnBooking_WhenUserIsBooker() {
+        Booking booking = createAndSaveBooking();
+        BookingDtoOut result = bookingService.getById(booker.getId(), booking.getId());
+        assertThat(result.getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    void getById_shouldReturnBooking_WhenUserIsOwner() {
+        Booking booking = createAndSaveBooking();
+        BookingDtoOut result = bookingService.getById(owner.getId(), booking.getId());
+        assertThat(result.getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    void getById_shouldThrow_WhenUserIsStranger() {
+        Booking booking = createAndSaveBooking();
+        User stranger = new User();
+        stranger.setName("Stranger");
+        stranger.setEmail("stranger@test.com");
+        userRepository.save(stranger);
+
+        assertThatThrownBy(() -> bookingService.getById(stranger.getId(), booking.getId()))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getById_shouldThrow_WhenBookingNotFound() {
+        assertThatThrownBy(() -> bookingService.getById(owner.getId(), 9999L))
+                .isInstanceOf(NotFoundException.class);
+    }
 }

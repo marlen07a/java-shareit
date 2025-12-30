@@ -195,4 +195,76 @@ class ItemServiceImplIntegrationTest {
         comment.setCreated(LocalDateTime.now());
         return commentRepository.save(comment);
     }
+
+    @Test
+    void getItemById_shouldReturnItemWithBookings_WhenRequestorIsOwner() {
+        Item item = createAndSaveItem();
+        Booking booking = createAndSaveBooking(item, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+
+        ItemDto result = itemService.getItemById(owner.getId(), item.getId());
+
+        assertThat(result.getId()).isEqualTo(item.getId());
+        assertThat(result.getNextBooking()).isNotNull();
+        assertThat(result.getNextBooking().getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    void getItemById_shouldReturnItemWithoutBookings_WhenRequestorIsNotOwner() {
+        Item item = createAndSaveItem();
+        createAndSaveBooking(item, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+
+        ItemDto result = itemService.getItemById(booker.getId(), item.getId());
+
+        assertThat(result.getId()).isEqualTo(item.getId());
+        assertThat(result.getNextBooking()).isNull();
+    }
+
+    @Test
+    void getItemById_shouldThrowException_WhenItemNotFound() {
+        assertThatThrownBy(() -> itemService.getItemById(owner.getId(), 999L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void updateItem_shouldUpdateOnlyName() {
+        Item item = createAndSaveItem();
+        ItemDto updateDto = new ItemDto();
+        updateDto.setName("New Name"); // Description and Available are null
+
+        ItemDto result = itemService.updateItem(owner.getId(), item.getId(), updateDto);
+
+        assertThat(result.getName()).isEqualTo("New Name");
+        assertThat(result.getDescription()).isEqualTo(item.getDescription());
+        assertThat(result.getAvailable()).isEqualTo(item.getAvailable());
+    }
+
+    @Test
+    void updateItem_shouldUpdateOnlyDescription() {
+        Item item = createAndSaveItem();
+        ItemDto updateDto = new ItemDto();
+        updateDto.setDescription("New Description");
+
+        ItemDto result = itemService.updateItem(owner.getId(), item.getId(), updateDto);
+
+        assertThat(result.getDescription()).isEqualTo("New Description");
+        assertThat(result.getName()).isEqualTo(item.getName());
+    }
+
+    @Test
+    void updateItem_shouldUpdateOnlyAvailable() {
+        Item item = createAndSaveItem();
+
+        boolean originalStatus = item.getAvailable();
+
+        ItemDto updateDto = new ItemDto();
+        updateDto.setAvailable(!originalStatus);
+
+        ItemDto result = itemService.updateItem(owner.getId(), item.getId(), updateDto);
+
+        assertThat(result.getAvailable()).isNotEqualTo(originalStatus);
+
+        assertThat(result.getAvailable()).isEqualTo(!originalStatus);
+
+        assertThat(result.getName()).isEqualTo(item.getName());
+    }
 }
