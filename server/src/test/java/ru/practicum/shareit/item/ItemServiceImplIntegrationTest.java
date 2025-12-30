@@ -216,8 +216,7 @@ class ItemServiceImplIntegrationTest {
         ItemDto result = itemService.getItemById(booker.getId(), item.getId());
 
         assertThat(result.getId()).isEqualTo(item.getId());
-
-        assertThat(result.getNextBooking()).isNotNull();
+        assertThat(result.getNextBooking()).isNull();
     }
 
     @Test

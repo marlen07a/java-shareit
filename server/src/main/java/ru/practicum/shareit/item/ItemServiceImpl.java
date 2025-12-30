@@ -79,7 +79,9 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
         dto.setComments(comments);
 
-        setBookingsForSingleItem(dto, itemId);
+        if (item.getOwner().getId().equals(userId)) {
+            setBookingsForSingleItem(dto, itemId);
+        }
 
         return dto;
     }
