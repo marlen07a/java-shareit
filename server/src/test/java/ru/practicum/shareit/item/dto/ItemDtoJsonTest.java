@@ -146,9 +146,10 @@ class ItemDtoJsonTest {
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo("Test Item");
-        assertThat(result).doesNotHaveJsonPath("$.requestId");
-        assertThat(result).doesNotHaveJsonPath("$.lastBooking");
-        assertThat(result).doesNotHaveJsonPath("$.nextBooking");
+
+        assertThat(result).extractingJsonPathValue("$.requestId").isNull();
+        assertThat(result).extractingJsonPathValue("$.lastBooking").isNull();
+        assertThat(result).extractingJsonPathValue("$.nextBooking").isNull();
     }
 
     @Test

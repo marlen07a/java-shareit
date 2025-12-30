@@ -81,6 +81,9 @@ public class ItemServiceImpl implements ItemService {
 
         if (item.getOwner().getId().equals(userId)) {
             setBookingsForSingleItem(dto, itemId);
+        } else {
+            dto.setLastBooking(null);
+            dto.setNextBooking(null);
         }
 
         return dto;
