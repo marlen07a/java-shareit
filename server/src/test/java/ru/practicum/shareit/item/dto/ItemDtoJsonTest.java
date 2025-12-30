@@ -44,15 +44,13 @@ class ItemDtoJsonTest {
 
     @Test
     void testItemDtoDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "name": "Test Item",
-                    "description": "Test Description",
-                    "available": true,
-                    "requestId": 5
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"name\": \"Test Item\","
+                + "\"description\": \"Test Description\","
+                + "\"available\": true,"
+                + "\"requestId\": 5"
+                + "}";
 
         ItemDto dto = itemDtoJson.parse(json).getObject();
 
@@ -120,14 +118,12 @@ class ItemDtoJsonTest {
 
     @Test
     void testCommentDtoDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "text": "Excellent item!",
-                    "authorName": "John Doe",
-                    "created": "2025-01-15T10:30:00"
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"text\": \"Excellent item!\","
+                + "\"authorName\": \"John Doe\","
+                + "\"created\": \"2025-01-15T10:30:00\""
+                + "}";
 
         CommentDto dto = commentDtoJson.parse(json).getObject();
 

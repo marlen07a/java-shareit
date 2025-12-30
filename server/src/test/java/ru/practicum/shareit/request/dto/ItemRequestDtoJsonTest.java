@@ -46,14 +46,12 @@ class ItemRequestDtoJsonTest {
 
     @Test
     void testItemRequestDtoDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "description": "Need a power drill",
-                    "requestorId": 5,
-                    "created": "2025-01-15T10:00:00"
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"description\": \"Need a power drill\","
+                + "\"requestorId\": 5,"
+                + "\"created\": \"2025-01-15T10:00:00\""
+                + "}";
 
         ItemRequestDto dto = itemRequestDtoJson.parse(json).getObject();
 
@@ -103,20 +101,18 @@ class ItemRequestDtoJsonTest {
 
     @Test
     void testItemRequestDtoOutDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "description": "Need a power drill",
-                    "created": "2025-01-15T10:00:00",
-                    "items": [
-                        {
-                            "id": 10,
-                            "name": "Power Drill",
-                            "ownerId": 20
-                        }
-                    ]
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"description\": \"Need a power drill\","
+                + "\"created\": \"2025-01-15T10:00:00\","
+                + "\"items\": ["
+                + "{"
+                + "\"id\": 10,"
+                + "\"name\": \"Power Drill\","
+                + "\"ownerId\": 20"
+                + "}"
+                + "]"
+                + "}";
 
         ItemRequestDtoOut dto = itemRequestDtoOutJson.parse(json).getObject();
 

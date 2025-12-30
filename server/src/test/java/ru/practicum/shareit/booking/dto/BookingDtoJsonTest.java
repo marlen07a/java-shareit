@@ -44,14 +44,12 @@ class BookingDtoJsonTest {
 
     @Test
     void testBookingDtoDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "start": "2025-01-15T10:00:00",
-                    "end": "2025-01-20T10:00:00",
-                    "itemId": 5
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"start\": \"2025-01-15T10:00:00\","
+                + "\"end\": \"2025-01-20T10:00:00\","
+                + "\"itemId\": 5"
+                + "}";
 
         BookingDto dto = bookingDtoJson.parse(json).getObject();
 
@@ -96,25 +94,23 @@ class BookingDtoJsonTest {
 
     @Test
     void testBookingDtoOutDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "start": "2025-01-15T10:00:00",
-                    "end": "2025-01-20T10:00:00",
-                    "status": "WAITING",
-                    "item": {
-                        "id": 5,
-                        "name": "Test Item",
-                        "description": "Test Description",
-                        "available": true
-                    },
-                    "booker": {
-                        "id": 10,
-                        "name": "John Doe",
-                        "email": "john@example.com"
-                    }
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"start\": \"2025-01-15T10:00:00\","
+                + "\"end\": \"2025-01-20T10:00:00\","
+                + "\"status\": \"WAITING\","
+                + "\"item\": {"
+                + "\"id\": 5,"
+                + "\"name\": \"Test Item\","
+                + "\"description\": \"Test Description\","
+                + "\"available\": true"
+                + "},"
+                + "\"booker\": {"
+                + "\"id\": 10,"
+                + "\"name\": \"John Doe\","
+                + "\"email\": \"john@example.com\""
+                + "}"
+                + "}";
 
         BookingDtoOut dto = bookingDtoOutJson.parse(json).getObject();
 

@@ -27,13 +27,11 @@ class UserDtoJsonTest {
 
     @Test
     void testUserDtoDeserialization() throws Exception {
-        String json = """
-                {
-                    "id": 1,
-                    "name": "John Doe",
-                    "email": "john@example.com"
-                }
-                """;
+        String json = "{"
+                + "\"id\": 1,"
+                + "\"name\": \"John Doe\","
+                + "\"email\": \"john@example.com\""
+                + "}";
 
         UserDto dto = userDtoJson.parse(json).getObject();
 
@@ -54,12 +52,10 @@ class UserDtoJsonTest {
 
     @Test
     void testUserDtoDeserializationWithNullId() throws Exception {
-        String json = """
-                {
-                    "name": "John Doe",
-                    "email": "john@example.com"
-                }
-                """;
+        String json = "{"
+                + "\"name\": \"John Doe\","
+                + "\"email\": \"john@example.com\""
+                + "}";
 
         UserDto dto = userDtoJson.parse(json).getObject();
 
