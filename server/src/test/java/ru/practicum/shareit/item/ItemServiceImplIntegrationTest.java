@@ -65,16 +65,13 @@ class ItemServiceImplIntegrationTest {
 
     @Test
     void addNewItem_shouldCreateItemSuccessfully() {
-        // Given
         ItemDto itemDto = new ItemDto();
         itemDto.setName("Test Item");
         itemDto.setDescription("Test Description");
         itemDto.setAvailable(true);
 
-        // When
         ItemDto result = itemService.addNewItem(owner.getId(), itemDto);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
         assertThat(result.getName()).isEqualTo("Test Item");
@@ -84,16 +81,13 @@ class ItemServiceImplIntegrationTest {
 
     @Test
     void getItemsByOwner_shouldReturnItemsWithBookingsAndComments() {
-        // Given
         Item item = createAndSaveItem();
         Booking pastBooking = createAndSaveBooking(item, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1));
         Booking futureBooking = createAndSaveBooking(item, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
         Comment comment = createAndSaveComment(item);
 
-        // When
         List<ItemDto> result = itemService.getItemsByOwner(owner.getId());
 
-        // Then
         assertThat(result).hasSize(1);
         ItemDto itemDto = result.get(0);
         assertThat(itemDto.getId()).isEqualTo(item.getId());
@@ -107,28 +101,23 @@ class ItemServiceImplIntegrationTest {
 
     @Test
     void updateItem_shouldUpdateSuccessfully() {
-        // Given
         Item item = createAndSaveItem();
         ItemDto updateDto = new ItemDto();
         updateDto.setName("Updated Name");
         updateDto.setDescription("Updated Description");
 
-        // When
         ItemDto result = itemService.updateItem(owner.getId(), item.getId(), updateDto);
 
-        // Then
         assertThat(result.getName()).isEqualTo("Updated Name");
         assertThat(result.getDescription()).isEqualTo("Updated Description");
     }
 
     @Test
     void updateItem_shouldThrowExceptionWhenNotOwner() {
-        // Given
         Item item = createAndSaveItem();
         ItemDto updateDto = new ItemDto();
         updateDto.setName("Updated Name");
 
-        // When & Then
         assertThatThrownBy(() -> itemService.updateItem(booker.getId(), item.getId(), updateDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("not the owner");
@@ -136,39 +125,31 @@ class ItemServiceImplIntegrationTest {
 
     @Test
     void searchItems_shouldReturnMatchingItems() {
-        // Given
         createAndSaveItem();
 
-        // When
         List<ItemDto> result = itemService.searchItems("drill");
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).containsIgnoringCase("drill");
     }
 
     @Test
     void searchItems_shouldReturnEmptyListForBlankText() {
-        // When
         List<ItemDto> result = itemService.searchItems("");
 
-        // Then
         assertThat(result).isEmpty();
     }
 
     @Test
     void addComment_shouldCreateCommentSuccessfully() {
-        // Given
         Item item = createAndSaveItem();
         Booking booking = createAndSaveBooking(item, LocalDateTime.now().minusDays(2), LocalDateTime.now().minusDays(1));
 
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Great item!");
 
-        // When
         CommentDto result = itemService.addComment(booker.getId(), item.getId(), commentDto);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
         assertThat(result.getText()).isEqualTo("Great item!");
@@ -178,12 +159,10 @@ class ItemServiceImplIntegrationTest {
 
     @Test
     void addComment_shouldThrowExceptionWhenNoCompletedBooking() {
-        // Given
         Item item = createAndSaveItem();
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Great item!");
 
-        // When & Then
         assertThatThrownBy(() -> itemService.addComment(booker.getId(), item.getId(), commentDto))
                 .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Booking not found or not suitable for comment");

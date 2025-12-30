@@ -57,14 +57,11 @@ class ItemRequestServiceImplIntegrationTest {
 
     @Test
     void create_shouldCreateRequestSuccessfully() {
-        // Given
         ItemRequestDto dto = new ItemRequestDto();
         dto.setDescription("Need a drill");
 
-        // When
         ItemRequestDtoOut result = itemRequestService.create(requestor.getId(), dto);
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
         assertThat(result.getDescription()).isEqualTo("Need a drill");
@@ -73,7 +70,6 @@ class ItemRequestServiceImplIntegrationTest {
 
     @Test
     void getOwn_shouldReturnOwnRequestsWithItems() {
-        // Given
         ItemRequestDto dto = new ItemRequestDto();
         dto.setDescription("Need a drill");
         ItemRequestDtoOut created = itemRequestService.create(requestor.getId(), dto);
@@ -87,10 +83,8 @@ class ItemRequestServiceImplIntegrationTest {
         item.setRequest(request);
         itemRepository.save(item);
 
-        // When
         List<ItemRequestDtoOut> result = itemRequestService.getOwn(requestor.getId());
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getItems()).hasSize(1);
         assertThat(result.get(0).getItems().get(0).getName()).isEqualTo("Drill");
@@ -98,44 +92,35 @@ class ItemRequestServiceImplIntegrationTest {
 
     @Test
     void getAll_shouldReturnOtherUsersRequests() {
-        // Given
         ItemRequestDto dto = new ItemRequestDto();
         dto.setDescription("Need a drill");
         itemRequestService.create(requestor.getId(), dto);
 
-        // When
         List<ItemRequestDtoOut> result = itemRequestService.getAll(otherUser.getId());
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDescription()).isEqualTo("Need a drill");
     }
 
     @Test
     void getAll_shouldNotReturnOwnRequests() {
-        // Given
         ItemRequestDto dto = new ItemRequestDto();
         dto.setDescription("Need a drill");
         itemRequestService.create(requestor.getId(), dto);
 
-        // When
         List<ItemRequestDtoOut> result = itemRequestService.getAll(requestor.getId());
 
-        // Then
         assertThat(result).isEmpty();
     }
 
     @Test
     void getById_shouldReturnRequestWithItems() {
-        // Given
         ItemRequestDto dto = new ItemRequestDto();
         dto.setDescription("Need a drill");
         ItemRequestDtoOut created = itemRequestService.create(requestor.getId(), dto);
 
-        // When
         ItemRequestDtoOut result = itemRequestService.getById(otherUser.getId(), created.getId());
 
-        // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(created.getId());
         assertThat(result.getDescription()).isEqualTo("Need a drill");
@@ -143,7 +128,6 @@ class ItemRequestServiceImplIntegrationTest {
 
     @Test
     void getById_shouldThrowExceptionWhenNotFound() {
-        // When & Then
         assertThatThrownBy(() -> itemRequestService.getById(requestor.getId(), 999L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Request not found");

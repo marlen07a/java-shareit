@@ -86,7 +86,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoOut> getAllByUser(Long userId, String state, Integer from, Integer size) {
-        // CHECK USER FIRST - ensures 404 is thrown before any pagination validation 400
         userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         if (from < 0 || size < 1) {

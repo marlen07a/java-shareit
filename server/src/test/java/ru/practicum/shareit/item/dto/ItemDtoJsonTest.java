@@ -5,9 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
-import ru.practicum.shareit.booking.BookingState;
-import ru.practicum.shareit.booking.dto.BookingDtoOut;
-import ru.practicum.shareit.user.UserDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -70,7 +67,6 @@ class ItemDtoJsonTest {
     void testItemDtoWithBookingsAndComments() throws Exception {
         LocalDateTime now = LocalDateTime.now();
 
-        // 1. Создаем комментарий
         CommentDto comment = new CommentDto();
         comment.setId(1L);
         comment.setText("Great item!");
@@ -80,7 +76,6 @@ class ItemDtoJsonTest {
         ItemDto.BookingDtoShort lastBooking = new ItemDto.BookingDtoShort(10L, 99L);
         ItemDto.BookingDtoShort nextBooking = new ItemDto.BookingDtoShort(20L, 99L);
 
-        // 3. Собираем ItemDto
         ItemDto dto = new ItemDto();
         dto.setId(1L);
         dto.setName("Test Item");
@@ -90,20 +85,16 @@ class ItemDtoJsonTest {
         dto.setNextBooking(nextBooking);
         dto.setComments(List.of(comment));
 
-        // 4. Проверяем JSON
         JsonContent<ItemDto> result = itemDtoJson.write(dto);
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
 
-        // Проверяем вложенные поля lastBooking
         assertThat(result).extractingJsonPathNumberValue("$.lastBooking.id").isEqualTo(10);
         assertThat(result).extractingJsonPathNumberValue("$.lastBooking.bookerId").isEqualTo(99);
 
-        // Проверяем вложенные поля nextBooking
         assertThat(result).extractingJsonPathNumberValue("$.nextBooking.id").isEqualTo(20);
         assertThat(result).extractingJsonPathNumberValue("$.nextBooking.bookerId").isEqualTo(99);
 
-        // Проверяем комментарии
         assertThat(result).extractingJsonPathArrayValue("$.comments").hasSize(1);
         assertThat(result).extractingJsonPathStringValue("$.comments[0].text").isEqualTo("Great item!");
     }

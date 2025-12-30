@@ -78,7 +78,6 @@ class BookingServiceImplIntegrationTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isNotNull();
-        // CHANGED: Use BookingStatus, not BookingState
         assertThat(result.getStatus()).isEqualTo(BookingState.WAITING);
         assertThat(result.getBooker().getId()).isEqualTo(booker.getId());
         assertThat(result.getItem().getId()).isEqualTo(item.getId());
@@ -110,7 +109,6 @@ class BookingServiceImplIntegrationTest {
                 item.getId()
         );
 
-        // When & Then
         assertThatThrownBy(() -> bookingService.create(owner.getId(), bookingDto))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Owner cannot book");
@@ -136,30 +134,22 @@ class BookingServiceImplIntegrationTest {
 
         BookingDtoOut result = bookingService.approve(owner.getId(), booking.getId(), true);
 
-        // CHANGED: Use BookingStatus
         assertThat(result.getStatus()).isEqualTo(BookingState.APPROVED);
     }
 
     @Test
     void approve_shouldRejectBookingSuccessfully() {
-        // Given
         Booking booking = createAndSaveBooking();
 
-        // When
         BookingDtoOut result = bookingService.approve(owner.getId(), booking.getId(), false);
 
-        // Then
-        // CHANGED: Use BookingStatus
         assertThat(result.getStatus()).isEqualTo(BookingState.REJECTED);
     }
 
     @Test
     void approve_shouldThrowExceptionWhenNotOwner() {
-        // Given
         Booking booking = createAndSaveBooking();
 
-        // When & Then
-        // CHANGED: Expect ValidationException (as per your implementation)
         assertThatThrownBy(() -> bookingService.approve(booker.getId(), booking.getId(), true))
                 .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("not the owner");
@@ -167,40 +157,31 @@ class BookingServiceImplIntegrationTest {
 
     @Test
     void getAllByUser_shouldReturnAllBookings() {
-        // Given
         createAndSaveBooking();
         createAndSaveBooking();
 
-        // When
         List<BookingDtoOut> result = bookingService.getAllByUser(booker.getId(), "ALL", 0, 10);
 
-        // Then
         assertThat(result).hasSize(2);
     }
 
     @Test
     void getAllByUser_shouldReturnWaitingBookings() {
-        // Given
+
         createAndSaveBooking();
 
-        // When
         List<BookingDtoOut> result = bookingService.getAllByUser(booker.getId(), "WAITING", 0, 10);
 
-        // Then
         assertThat(result).hasSize(1);
-        // CHANGED: Use BookingStatus
         assertThat(result.get(0).getStatus()).isEqualTo(BookingState.WAITING);
     }
 
     @Test
     void getAllByOwner_shouldReturnOwnerBookings() {
-        // Given
         createAndSaveBooking();
 
-        // When
         List<BookingDtoOut> result = bookingService.getAllByOwner(owner.getId(), "ALL", 0, 10);
 
-        // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getItem().getId()).isEqualTo(item.getId());
     }
@@ -211,7 +192,6 @@ class BookingServiceImplIntegrationTest {
         booking.setEnd(LocalDateTime.now().plusDays(2));
         booking.setItem(item);
         booking.setBooker(booker);
-        // CHANGED: Use BookingStatus
         booking.setStatus(BookingState.WAITING);
         return bookingRepository.save(booking);
     }
