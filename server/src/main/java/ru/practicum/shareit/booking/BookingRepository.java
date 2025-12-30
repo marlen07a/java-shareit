@@ -41,8 +41,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     boolean existsByBookerIdAndItemIdAndStatusAndEndBefore(Long bookerId, Long itemId, BookingState status, LocalDateTime now);
 
-    boolean existsByBookerIdAndItemIdAndEndBefore(Long bookerId, Long itemId, LocalDateTime now);
-
     @Query("SELECT b FROM Booking b " +
             "LEFT JOIN FETCH b.booker " +
             "LEFT JOIN FETCH b.item " +
@@ -51,12 +49,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY b.start ASC")
     List<Booking> findAllByItemIdInAndStatus(@Param("itemIds") List<Long> itemIds,
                                              @Param("status") BookingState state);
-
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.item.id = :itemId " +
-            "AND b.booker.id = :userId " +
-            "AND b.status = :status")
-    List<Booking> findAllByItemIdAndBookerIdAndStatus(@Param("itemId") Long itemId,
-                                                      @Param("userId") Long userId,
-                                                      @Param("status") BookingState status);
 }
